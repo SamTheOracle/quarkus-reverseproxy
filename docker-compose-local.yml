@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  proxy:
+    build: .
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: '200M'
+        reservations:
+          cpus: '0.25'
+          memory: '160M'
+    ports:
+      - 8085:8080
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    networks:
+      - proxylocal
+  redis:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: '100M'
+        reservations:
+          cpus: '0.05'
+          memory: '80M'
+    image: redis
+    ports:
+      - 6380:6379
+    networks:
+      - proxylocal
+  tracks:
+    image: oracolo/findmycar:tracks
+    ports:
+      - 8902:8000
+    environment:
+      - MONGO_DB_HOST=mongodb
+      - MONGO_DB=tracksdb
+      - MONGO_DB_PORT=27017
+      - PROXY_PORT=8080
+      - PROXY_HOST=proxy
+      - PROXY_ROOT_PATH=/api/v1
+      - HOST=tracks
+      - EXTERNAL_PORT=8000
+    depends_on:
+      - mongodb
+      - proxy
+    networks:
+      - proxylocal
+    deploy:
+      resources:
+        limits:
+          memory: '300M'
+        reservations:
+          memory: '80M'
+  mongodb:
+    image: mongo
+    deploy:
+      resources:
+        limits:
+          cpus: '0.4'
+          memory: '500M'
+        reservations:
+          cpus: '0.05'
+          memory: '300M'
+    ports:
+      - 8655:27017
+    networks:
+      - proxylocal
+networks:
+  proxylocal:
