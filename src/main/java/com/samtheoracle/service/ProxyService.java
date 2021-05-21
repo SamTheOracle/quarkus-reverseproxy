@@ -3,7 +3,6 @@ package com.samtheoracle.service;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Optional;
-import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
@@ -12,6 +11,8 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.samtheoracle.config.ProxyConfigurator;
 import com.samtheoracle.service.cache.CacheService;
@@ -20,6 +21,7 @@ import com.samtheoracle.service.cache.ProxyResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.smallrye.mutiny.Uni;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.mutiny.core.MultiMap;
 import io.vertx.mutiny.core.buffer.Buffer;
 import io.vertx.mutiny.ext.web.client.HttpResponse;
@@ -27,8 +29,8 @@ import io.vertx.mutiny.ext.web.client.WebClient;
 import io.vertx.servicediscovery.Record;
 
 @ApplicationScoped
-public class ReverseProxyService {
-	private final Logger logger = Logger.getLogger(this.getClass().getSimpleName());
+public class ProxyService {
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getSimpleName());
 
 	@ConfigProperty(name = "proxy.reroute.timeout")
 	Integer timeout;
@@ -85,24 +87,28 @@ public class ReverseProxyService {
 			String host = record.getLocation().getString("host");
 			Integer port = record.getLocation().getInteger("port");
 			String fullUri = "http://" + host + ":" + port + "/" + uri;
-			logger.info("making http request to " + fullUri);
-			return reroute(webClient, "/" + uri, host, port, headers);
+			logger.debug("making http request to {}",fullUri);
+			return reroute(webClient, "/" + uri, host, port, headers,timeout*1000,HttpMethod.GET);
 		});
 
-		return httpResponseUni.onItem().transform(bufferHttpResponse -> ProxyResponse.create(bufferHttpResponse.bodyAsBuffer(), false, bufferHttpResponse.statusCode()));
+		return httpResponseUni.onItem().transform(bufferHttpResponse -> ProxyResponse.create(bufferHttpResponse.body(), false, bufferHttpResponse.statusCode()));
 	}
 
 	private Uni<ProxyResponse> rerouteGetRequest(String root, String uri, int cacheEx, MultivaluedMap<String, String> headers) {
-		return rerouteGetRequest(root, uri, headers).onItem().ifNotNull().transformToUni(
-				proxyResponse -> cacheService.set(uri, proxyResponse.getData().toString(), cacheEx).onItem().transform(
+		return rerouteGetRequest(root, uri, headers).onFailure().recoverWithNull().onItem()
+				.ifNull()
+				.fail()
+				.onItem()
+				.ifNotNull()
+				.transformToUni(proxyResponse -> cacheService.set(uri, proxyResponse.getData().toString(), cacheEx).onItem().transform(
 						response -> ProxyResponse.create(proxyResponse.getData(), true, proxyResponse.getStatus())));
 	}
 
 	private static Uni<HttpResponse<Buffer>> reroute(WebClient webClient, String uri, String host, int port,
-			MultivaluedMap<String, String> headers) {
+			MultivaluedMap<String, String> headers,int timeout, HttpMethod method) {
 		MultiMap httpRequestHeaders = MultiMap.caseInsensitiveMultiMap();
 		headers.forEach(httpRequestHeaders::add);
-		return webClient.get(port, host, uri).putHeaders(httpRequestHeaders).send();
+		return webClient.request(method,port, host, uri).timeout(timeout).putHeaders(httpRequestHeaders).send();
 	}
 
 }

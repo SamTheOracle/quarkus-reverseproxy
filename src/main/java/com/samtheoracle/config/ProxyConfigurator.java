@@ -1,13 +1,14 @@
 package com.samtheoracle.config;
 
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClientOptions;
@@ -18,7 +19,7 @@ import io.vertx.servicediscovery.ServiceDiscoveryOptions;
 
 @ApplicationScoped
 public class ProxyConfigurator {
-	private final Logger logger = Logger.getLogger(this.getClass().getSimpleName());
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getSimpleName());
 
 	@ConfigProperty(name = "proxy.redis.host")
 	String redisHost;
@@ -29,8 +30,7 @@ public class ProxyConfigurator {
 	@ConfigProperty(name = "proxy.redis.key")
 	String key;
 
-	@ConfigProperty(name = "proxy.reroute.timeout")
-	Integer timeout;
+
 
 	@Inject
 	Vertx vertx;
@@ -45,16 +45,15 @@ public class ProxyConfigurator {
 		String redisPort = "REDIS PORT: " + this.redisPort;
 		String redisKey = "REDIS KEY: " + this.key;
 		String config = String.join("\n", redisHost, redisPort, redisKey);
-		logger.info("Starting reverse proxy with user configuration:\n" + config);
+		logger.info("Starting reverse proxy with user configuration:\n{}",  config);
 		String redisUrl = String.format("redis://%s:%s", redisHost, redisPort);
 		ServiceDiscoveryOptions discoveryOptions = new ServiceDiscoveryOptions().setBackendConfiguration(
 				new JsonObject().put("connectionString", redisUrl).put("key", key));
 
+
 		serviceDiscovery = ServiceDiscovery.create(vertx, discoveryOptions);
 		WebClientOptions webClientOptions = new WebClientOptions();
 		webClientOptions.setKeepAlive(false);
-		webClientOptions.setIdleTimeout(timeout);
-		webClientOptions.setIdleTimeoutUnit(TimeUnit.SECONDS);
 		webClient = WebClient.create(vertx, webClientOptions);
 
 	}

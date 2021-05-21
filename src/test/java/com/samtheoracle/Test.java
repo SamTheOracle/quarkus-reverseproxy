@@ -10,5 +10,8 @@ public class Test {
 		String uri = "tracks/position";
 		String root = uri.split("/")[0];
 		System.out.println(root);
+		String test = "[{\"latitude\":\"skljglfk\",\"longitude\":\"bel veicolo\",\"vehicleId\":\"213\"},{\"latitude\":\"skljglfk\",\"longitude\":\"bel veicolo\",\"vehicleId\":\"213\"},{\"latitude\":\"skljglfk\",\"longitude\":\"bel veicolo\",\"vehicleId\":\"213\"},{\"latitude\":\"skljglfk\",\"longitude\":\"bel veicolo\",\"vehicleId\":\"213\"},{\"latitude\":\"skljglfk\",\"longitude\":\"bel veicolo\",\"vehicleId\":\"213\"}]";
+		Object object = Buffer.buffer(test.getBytes(StandardCharsets.UTF_8)).toJson();
+		System.out.println(object);
 	}
 }

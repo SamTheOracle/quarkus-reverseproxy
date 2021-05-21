@@ -8,6 +8,9 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.samtheoracle.config.ProxyConfigurator;
 
 import io.smallrye.mutiny.Uni;
@@ -16,6 +19,7 @@ import io.vertx.servicediscovery.Record;
 
 @ApplicationScoped
 public class ServiceDiscoveryHelper {
+	private final Logger logger = LoggerFactory.getLogger(this.getClass().getSimpleName());
 
 	@Inject
 	ProxyConfigurator proxyConfigurator;
@@ -27,7 +31,7 @@ public class ServiceDiscoveryHelper {
 		discovery = proxyConfigurator.getServiceDiscovery();
 	}
 	public Uni<Record> createNewRecord(Record record){
-		return discovery.getRecord(r-> Optional.ofNullable(r.getName()).orElse("").equals(r.getName())).onItem()
+		return discovery.getRecord(r-> Optional.ofNullable(r.getName()).orElse("").equals(record.getName())).onItem()
 				.ifNull()
 				.continueWith(record)
 				.onItem()
