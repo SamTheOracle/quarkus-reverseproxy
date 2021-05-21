@@ -1,5 +1,6 @@
 package com.samtheoracle.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import javax.annotation.PostConstruct;
@@ -7,10 +8,9 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
 
-import com.samtheoracle.config.ReverseProxyConfigurator;
+import com.samtheoracle.config.ProxyConfigurator;
 
 import io.smallrye.mutiny.Uni;
-import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.servicediscovery.ServiceDiscovery;
 import io.vertx.servicediscovery.Record;
 
@@ -18,13 +18,13 @@ import io.vertx.servicediscovery.Record;
 public class ServiceDiscoveryHelper {
 
 	@Inject
-	ReverseProxyConfigurator reverseProxyConfigurator;
+	ProxyConfigurator proxyConfigurator;
 
 	ServiceDiscovery discovery;
 
 	@PostConstruct
 	void init(){
-		discovery = reverseProxyConfigurator.getServiceDiscovery();
+		discovery = proxyConfigurator.getServiceDiscovery();
 	}
 	public Uni<Record> createNewRecord(Record record){
 		return discovery.getRecord(r-> Optional.ofNullable(r.getName()).orElse("").equals(r.getName())).onItem()
@@ -41,5 +41,13 @@ public class ServiceDiscoveryHelper {
 				.onItem()
 				.ifNotNull()
 				.transformToUni(record -> Uni.createFrom().item(record));
+	}
+
+	public Uni<List<Record>> getRecords(){
+		return discovery.getRecords(record -> true);
+	}
+
+	public Uni<Void> removeRecord(String registration) {
+		return discovery.unpublish(registration);
 	}
 }

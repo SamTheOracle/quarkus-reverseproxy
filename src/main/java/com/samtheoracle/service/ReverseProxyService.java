@@ -13,7 +13,7 @@ import javax.ws.rs.core.Response;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import com.samtheoracle.config.ReverseProxyConfigurator;
+import com.samtheoracle.config.ProxyConfigurator;
 import com.samtheoracle.service.cache.CacheService;
 import com.samtheoracle.service.cache.ProxyResponse;
 
@@ -37,7 +37,7 @@ public class ReverseProxyService {
 	Integer cacheMaxAge;
 
 	@Inject
-	ReverseProxyConfigurator reverseProxyConfigurator;
+	ProxyConfigurator proxyConfigurator;
 
 	@Inject
 	ServiceDiscoveryHelper discoveryHelper;
@@ -50,7 +50,7 @@ public class ReverseProxyService {
 	@PostConstruct
 	void init() {
 		logger.info("Reverse proxy service created");
-		webClient = reverseProxyConfigurator.getWebClient();
+		webClient = proxyConfigurator.getWebClient();
 	}
 
 	public Uni<ProxyResponse> handleGetReroute(String uri, MultivaluedMap<String, String> headers) {

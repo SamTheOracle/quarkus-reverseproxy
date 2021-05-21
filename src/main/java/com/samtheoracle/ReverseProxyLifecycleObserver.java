@@ -7,13 +7,11 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
-import com.samtheoracle.config.ReverseProxyConfigurator;
+import com.samtheoracle.config.ProxyConfigurator;
+import com.samtheoracle.service.HealthCheckService;
 
 import io.quarkus.runtime.Quarkus;
 import io.quarkus.runtime.StartupEvent;
-import io.smallrye.mutiny.Uni;
-import io.vertx.mutiny.core.buffer.Buffer;
-import io.vertx.mutiny.ext.web.client.HttpResponse;
 import io.vertx.mutiny.servicediscovery.ServiceDiscovery;
 import io.vertx.servicediscovery.Record;
 
@@ -24,10 +22,11 @@ public class ReverseProxyLifecycleObserver {
 
 
 	@Inject
-	ReverseProxyConfigurator reverseProxyConfigurator;
+	ProxyConfigurator proxyConfigurator;
+
 
 	void onStart(@Observes StartupEvent event){
-		ServiceDiscovery discovery = reverseProxyConfigurator.getServiceDiscovery();
+		ServiceDiscovery discovery = proxyConfigurator.getServiceDiscovery();
 		try {
 			Record record = discovery.publishAndAwait(new Record());
 			logger.info("Test record: "+record.toJson().encodePrettily());

@@ -17,7 +17,7 @@ import io.vertx.mutiny.servicediscovery.ServiceDiscovery;
 import io.vertx.servicediscovery.ServiceDiscoveryOptions;
 
 @ApplicationScoped
-public class ReverseProxyConfigurator {
+public class ProxyConfigurator {
 	private final Logger logger = Logger.getLogger(this.getClass().getSimpleName());
 
 	@ConfigProperty(name = "proxy.redis.host")
