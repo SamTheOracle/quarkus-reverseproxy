@@ -6,11 +6,11 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.25'
-          memory: '200M'
+          cpus: '0.50'
+          memory: '100M'
         reservations:
           cpus: '0.25'
-          memory: '160M'
+          memory: '80M'
     ports:
       - 8085:8080
     environment:

@@ -22,7 +22,7 @@ public class ErrorHandlerService {
 		}
 		ProxyResponse proxyResponse = ProxyResponse.create(Buffer.buffer(throwable.getMessage().getBytes(StandardCharsets.UTF_8) ),
 				false, Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
-		throwable.printStackTrace();
+
 		return Uni.createFrom().item(proxyResponse);
 	}
 }
