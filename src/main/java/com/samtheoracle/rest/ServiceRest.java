@@ -18,10 +18,6 @@ import com.samtheoracle.service.ServiceDiscoveryHelper;
 
 import io.smallrye.mutiny.Uni;
 
-import io.vertx.core.json.JsonObject;
-import io.vertx.mutiny.servicediscovery.ServiceDiscovery;
-import io.vertx.servicediscovery.Record;
-
 @Path("/services")
 public class ServiceRest {
     private final Logger logger = Logger.getLogger(this.getClass().getSimpleName());
