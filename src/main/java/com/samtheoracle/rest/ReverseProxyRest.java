@@ -12,6 +12,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.UriInfo;
 
 import com.samtheoracle.converter.ReverseProxyConverter;
 import com.samtheoracle.service.ErrorHandlerService;
@@ -33,14 +34,15 @@ public class ReverseProxyRest {
 	@Inject
 	ReverseProxyConverter converter;
 
+
+
 	@GET
 	@Path("{uri: .*}")
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN })
-	public Uni<JsonObject> rerouteGet(@PathParam(value = "uri") String uri,
-			@Context HttpHeaders httpHeaders) {
-
+	public Uni<JsonObject> rerouteGet(@PathParam(value = "uri") String uri, @Context HttpHeaders httpHeaders, @Context UriInfo uriInfo) {
+		MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
 		MultivaluedMap<String, String> headers = httpHeaders.getRequestHeaders();
-		return proxyService.handleRerouteWithCache(uri, headers).onFailure()
+		return proxyService.handleRerouteWithCache(uri, headers,queryParameters).onFailure()
 				.recoverWithUni(throwable -> errorHandlerService.handleError(throwable))
 				.onItem()
 				.ifNotNull().transform(proxyResponse -> JsonObject.mapFrom(converter.from(proxyResponse)));
@@ -50,9 +52,10 @@ public class ReverseProxyRest {
 	@POST
 	@Path("{uri: .*}")
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN })
-	public Uni<JsonObject> reroutePost(@PathParam(value = "uri") String uri, byte[] body,@Context HttpHeaders httpHeaders) {
+	public Uni<JsonObject> reroutePost(@PathParam(value = "uri") String uri, byte[] body,@Context HttpHeaders httpHeaders, @Context UriInfo uriInfo) {
+		MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
 		MultivaluedMap<String, String> headers = httpHeaders.getRequestHeaders();
-		return proxyService.handleRerouteWithBody(uri, headers,body,HttpMethod.POST).onFailure()
+		return proxyService.handleRerouteWithBody(uri, headers,body,HttpMethod.POST,queryParameters).onFailure()
 				.recoverWithUni(throwable -> errorHandlerService.handleError(throwable))
 				.onItem()
 				.ifNotNull().transform(proxyResponse -> JsonObject.mapFrom(converter.from(proxyResponse)));
@@ -60,9 +63,10 @@ public class ReverseProxyRest {
 	@PUT
 	@Path("{uri: .*}")
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN })
-	public Uni<JsonObject> reroutePut(@PathParam(value = "uri") String uri, byte[] body,@Context HttpHeaders httpHeaders) {
+	public Uni<JsonObject> reroutePut(@PathParam(value = "uri") String uri, byte[] body,@Context HttpHeaders httpHeaders, @Context UriInfo uriInfo) {
+		MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
 		MultivaluedMap<String, String> headers = httpHeaders.getRequestHeaders();
-		return proxyService.handleRerouteWithBody(uri, headers,body,HttpMethod.PUT).onFailure()
+		return proxyService.handleRerouteWithBody(uri, headers,body,HttpMethod.PUT,queryParameters).onFailure()
 				.recoverWithUni(throwable -> errorHandlerService.handleError(throwable))
 				.onItem()
 				.ifNotNull().transform(proxyResponse -> JsonObject.mapFrom(converter.from(proxyResponse)));
@@ -70,9 +74,10 @@ public class ReverseProxyRest {
 	@DELETE
 	@Path("{uri: .*}")
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN })
-	public Uni<JsonObject> rerouteDelete(@PathParam(value = "uri") String uri, byte[] body,@Context HttpHeaders httpHeaders) {
+	public Uni<JsonObject> rerouteDelete(@PathParam(value = "uri") String uri, byte[] body,@Context HttpHeaders httpHeaders, @Context UriInfo uriInfo) {
+		MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
 		MultivaluedMap<String, String> headers = httpHeaders.getRequestHeaders();
-		return proxyService.handleRerouteWithBody(uri, headers,body, HttpMethod.DELETE).onFailure()
+		return proxyService.handleRerouteWithBody(uri, headers,body, HttpMethod.DELETE,queryParameters).onFailure()
 				.recoverWithUni(throwable -> errorHandlerService.handleError(throwable))
 				.onItem()
 				.ifNotNull().transform(proxyResponse -> JsonObject.mapFrom(converter.from(proxyResponse)));

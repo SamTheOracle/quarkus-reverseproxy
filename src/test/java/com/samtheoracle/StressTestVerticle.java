@@ -18,7 +18,7 @@ public class StressTestVerticle extends AbstractVerticle {
         IntStream.range(0, 50000).forEach(i -> {
 
             System.out.println("making http request " + i + "-th");
-            client.getAbs("http://localhost:8085/api/v1/tracks/positions/213/last")
+            client.getAbs("http://localhost/proxy/api/v1/tracks/vehicles?owner=giacomo")
 //                    .putHeader(HttpHeaderNames.CACHE_CONTROL.toString(), "max-age=30")
                     .send(event
                             -> {
@@ -29,10 +29,10 @@ public class StressTestVerticle extends AbstractVerticle {
                             System.out.println(event.result().body().toString());
                         }
                     });
-            client.getAbs("http://localhost:8085/api/v1/tracks/positions/213")
+            client.getAbs("http://localhost/proxy/api/v1/tracks/vehicles?owner=giacomo")
                     .putHeader(HttpHeaderNames.CACHE_CONTROL.toString(), HttpHeaderValues.MAX_AGE+"=30")
                     .send(event -> {
-                System.out.println("done with " + i + "-th request http://localhost:8085/api/v1/tracks/positions/9114a51f-45a7-47e8-a4db-171fc3bc241f");
+                System.out.println("done with " + i + "-th request http://localhost/proxy/api/v1/tracks/vehicles?owner=giacomo");
                 if (event.failed()) {
                     System.out.println(event.cause().getMessage());
                 }else{
