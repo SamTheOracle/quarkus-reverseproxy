@@ -7,4 +7,5 @@ public class ProxyResponseDto {
 
 	public Boolean isCached;
 	public Object data;
+	public int status;
 }

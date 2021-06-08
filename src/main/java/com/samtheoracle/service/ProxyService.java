@@ -112,8 +112,7 @@ public class ProxyService {
 			return reroute(webClient, "/" + uri, host, port, headers, timeout * 1000, HttpMethod.GET,queryParameters);
 		});
 
-		return httpResponseUni.onItem().transform(
-				bufferHttpResponse -> ProxyResponse.create(bufferHttpResponse.body(), false, bufferHttpResponse.statusCode()));
+		return handleHttpResponse(httpResponseUni,root);
 	}
 
 	private Uni<ProxyResponse> rerouteGetRequest(String root, String uri, int cacheEx, MultivaluedMap<String, String> headers,
@@ -154,7 +153,7 @@ public class ProxyService {
 			if (status >= 400) {
 				Exception exception = createException(Response.Status.fromStatusCode(status),
 						responseBody == null ? "Error from service " + serviceRoot : responseBody.toString());
-				return Uni.createFrom().item(response).onItem().failWith(() -> exception);
+				return Uni.createFrom().item(response);
 			}
 			return Uni.createFrom().item(response);
 		});
