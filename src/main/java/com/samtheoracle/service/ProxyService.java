@@ -8,6 +8,7 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.MultivaluedMap;
@@ -168,6 +169,8 @@ public class ProxyService {
 			return new NotFoundException(message);
 		case BAD_REQUEST:
 			return new BadRequestException(message);
+		case FORBIDDEN:
+			return new ForbiddenException(message);
 		default:
 			return new Exception(message);
 		}
