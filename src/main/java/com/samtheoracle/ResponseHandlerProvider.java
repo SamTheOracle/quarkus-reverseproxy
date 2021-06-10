@@ -18,20 +18,15 @@ import io.vertx.core.json.Json;
 @Provider
 public class ResponseHandlerProvider implements ContainerResponseFilter {
 
-
-	@ConfigProperty(name = "quarkus.resteasy.path")
-	String basePath;
 	@Override
 	public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
-		String baseUri = requestContext.getUriInfo().getBaseUri().getPath();
-		String path = baseUri+"services";
-		if(path.contains("/"+basePath+"/services")){
+		String baseUri = requestContext.getUriInfo().getPath();
+		if(baseUri.equals("/services")){
 			return;
 		}
 		if(responseContext.hasEntity()) {
 			ProxyResponseDto proxyResponseDto = Json.decodeValue(responseContext.getEntity().toString(),ProxyResponseDto.class);
 			responseContext.setStatus(proxyResponseDto.status);
-
 		}
 
 	}

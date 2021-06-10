@@ -7,10 +7,6 @@ import java.util.Optional;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
@@ -150,12 +146,16 @@ public class ProxyService {
 	private static Uni<ProxyResponse> handleHttpResponse(Uni<HttpResponse<Buffer>> httpResponseUni, String serviceRoot) {
 		return httpResponseUni.onItem().transformToUni(bufferHttpResponse -> {
 			int status = bufferHttpResponse.statusCode();
-			Buffer responseBody = bufferHttpResponse.bodyAsBuffer() == null ? Buffer.buffer("Error from service " + serviceRoot) :
-					bufferHttpResponse.bodyAsBuffer();
-			ProxyResponse response = ProxyResponse.create(responseBody, false, bufferHttpResponse.statusCode());
+
+			ProxyResponse response;
 			if (status >= 400) {
+				Buffer responseBody = bufferHttpResponse.bodyAsBuffer() == null ? Buffer.buffer("Error from service " + serviceRoot) :
+						bufferHttpResponse.bodyAsBuffer();
+				response = ProxyResponse.create(responseBody, false, bufferHttpResponse.statusCode());
 				return Uni.createFrom().item(response);
 			}
+			Buffer responseBody = bufferHttpResponse.bodyAsBuffer();
+			response = ProxyResponse.create(responseBody, false, bufferHttpResponse.statusCode());
 			return Uni.createFrom().item(response);
 		});
 	}
