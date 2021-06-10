@@ -38,7 +38,9 @@ public class ServiceDiscoveryHelper {
 				.transformToUni(r->discovery.publish(r));
 	}
 	public Uni<Record> getRecord(String root){
-		return  discovery.getRecord(record -> record.getLocation()!=null && root.equals(record.getLocation().getString("root")))
+		return  discovery.getRecord(record -> record.getLocation()!=null && record.getLocation().getString("root").equals(root))
+				.onFailure()
+				.recoverWithNull()
 				.onItem()
 				.ifNull()
 				.failWith(()->new NotFoundException("Record with root "+root+" was not found"))
