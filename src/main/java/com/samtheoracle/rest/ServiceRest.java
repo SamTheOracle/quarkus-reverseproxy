@@ -52,5 +52,17 @@ public class ServiceRest {
                 .recoverWithItem(throwable -> Response.status(Response.Status.NOT_FOUND.getStatusCode()).entity(throwable.getMessage()).build());
     }
 
+    @GET
+    @Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_PLAIN})
+    public Uni<Response> getServices(){
+        return serviceDiscoveryHelper.getRecords()
+                .onItem()
+                .ifNotNull()
+                .transform(records -> Response.ok(serviceDiscoveryConverter.to(records)).build())
+                .onFailure()
+                .recoverWithItem(throwable -> Response.status(Response.Status.NOT_FOUND.getStatusCode()).entity(throwable.getMessage()).build());
+    }
+
+
 
 }
