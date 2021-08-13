@@ -16,10 +16,8 @@ public class StressTestVerticle extends AbstractVerticle {
         Vertx vertx = Vertx.vertx();
         WebClient client = WebClient.create(vertx);
         IntStream.range(0, 50000).forEach(i -> {
-
             System.out.println("making http request " + i + "-th");
             client.getAbs("http://localhost/proxy/api/v1/tracks/vehicles?owner=giacomo")
-//                    .putHeader(HttpHeaderNames.CACHE_CONTROL.toString(), "max-age=30")
                     .send(event
                             -> {
                         System.out.println("done with " + i + "-th request");
@@ -32,13 +30,34 @@ public class StressTestVerticle extends AbstractVerticle {
             client.getAbs("http://localhost/proxy/api/v1/tracks/vehicles?owner=giacomo")
                     .putHeader(HttpHeaderNames.CACHE_CONTROL.toString(), HttpHeaderValues.MAX_AGE+"=30")
                     .send(event -> {
-                System.out.println("done with " + i + "-th request http://localhost/proxy/api/v1/tracks/vehicles?owner=giacomo");
-                if (event.failed()) {
-                    System.out.println(event.cause().getMessage());
-                }else{
-                    System.out.println(event.result().body().toString());
-                }
-            });
+                        System.out.println("done with " + i + "-th request");
+                        if (event.failed()) {
+                            System.out.println(event.cause().getMessage());
+                        }else{
+                            System.out.println(event.result().body().toString());
+                        }
+                    });
+            client.getAbs("http://localhost/proxy/api/v1/tracks/vehicles?owner=giacomo")
+                    .putHeader(HttpHeaderNames.CACHE_CONTROL.toString(), HttpHeaderValues.MAX_AGE+"=30")
+                    .send(event -> {
+                        System.out.println("done with " + i + "-th request");
+                        if (event.failed()) {
+                            System.out.println(event.cause().getMessage());
+                        }else{
+                            System.out.println(event.result().body().toString());
+                        }
+                    });
+
+            client.getAbs("http://localhost/proxy/api/v1/tracks/vehicles/1/positions/last")
+                    .putHeader(HttpHeaderNames.CACHE_CONTROL.toString(), HttpHeaderValues.MAX_AGE+"=30")
+                    .send(event -> {
+                        System.out.println("done with " + i + "-th request");
+                        if (event.failed()) {
+                            System.out.println(event.cause().getMessage());
+                        }else{
+                            System.out.println(event.result().body().toString());
+                        }
+                    });
 //            client.getAbs(REMOTE).putHeader(HttpHeaderNames.CACHE_CONTROL.toString(), HttpHeaderValues.MAX_AGE.toString() + "=30").send(event -> {
 //                System.out.println("done with " + i + "-th");
 //                if (event.failed()) {

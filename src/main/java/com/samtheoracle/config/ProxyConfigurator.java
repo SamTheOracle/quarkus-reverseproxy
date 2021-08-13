@@ -46,7 +46,7 @@ public class ProxyConfigurator {
 		String redisKey = "REDIS KEY: " + this.key;
 		String config = String.join("\n", redisHost, redisPort, redisKey);
 		logger.info("Starting reverse proxy with user configuration:\n{}",  config);
-		String redisUrl = String.format("redis://%s:%s", redisHost, redisPort);
+		String redisUrl = String.format("redis://%s:%s", this.redisHost, this.redisPort);
 		ServiceDiscoveryOptions discoveryOptions = new ServiceDiscoveryOptions().setBackendConfiguration(
 				new JsonObject().put("connectionString", redisUrl).put("key", key));
 
