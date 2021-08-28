@@ -27,6 +27,8 @@ public class ServiceDiscoveryConverter {
 		RecordDto recordDto = new RecordDto();
 		recordDto.name = record.getName();
 		recordDto.location = new RecordDto.LocationDto();
+		Boolean ssl = record.getLocation().getBoolean("ssl");
+		recordDto.location.ssl = ssl != null && ssl;
 		recordDto.location.host = record.getLocation().getString("host");
 		recordDto.location.port = record.getLocation().getInteger("port");
 		recordDto.location.root = record.getLocation().getString("root");

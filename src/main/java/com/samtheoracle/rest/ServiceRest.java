@@ -53,6 +53,7 @@ public class ServiceRest {
     }
 
     @GET
+    @Path("all")
     @Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_PLAIN})
     public Uni<Response> getServices(){
         return serviceDiscoveryHelper.getRecords()

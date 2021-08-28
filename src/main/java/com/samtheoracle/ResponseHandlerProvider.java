@@ -21,7 +21,7 @@ public class ResponseHandlerProvider implements ContainerResponseFilter {
 	@Override
 	public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
 		String baseUri = requestContext.getUriInfo().getPath();
-		if(baseUri.equals("/services")){
+		if(baseUri.contains("/services")){
 			return;
 		}
 		if(responseContext.hasEntity()) {
