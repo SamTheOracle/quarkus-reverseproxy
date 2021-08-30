@@ -14,7 +14,7 @@ import javax.ws.rs.core.Response;
 
 import com.samtheoracle.converter.ServiceDiscoveryConverter;
 import com.samtheoracle.dto.RecordDto;
-import com.samtheoracle.service.ServiceDiscoveryHelper;
+import com.samtheoracle.discovery.ServiceDiscoveryHelper;
 
 import io.smallrye.mutiny.Uni;
 
@@ -27,6 +27,7 @@ public class ServiceRest {
 
     @Inject
     ServiceDiscoveryConverter serviceDiscoveryConverter;
+
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)

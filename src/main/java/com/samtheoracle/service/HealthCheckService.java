@@ -4,17 +4,18 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
+import com.samtheoracle.discovery.Record;
+import com.samtheoracle.discovery.ServiceDiscoveryHelper;
+import com.samtheoracle.discovery.Status;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.samtheoracle.config.ProxyConfigurator;
 
 import io.quarkus.runtime.StartupEvent;
 import io.quarkus.scheduler.Scheduled;
 import io.vertx.mutiny.ext.web.client.WebClient;
 import io.vertx.mutiny.ext.web.client.predicate.ResponsePredicate;
-import io.vertx.servicediscovery.Record;
 
 @ApplicationScoped
 public class HealthCheckService {
@@ -30,13 +31,10 @@ public class HealthCheckService {
 	ServiceDiscoveryHelper helper;
 
 	@Inject
-	ProxyConfigurator proxyConfigurator;
-
 	WebClient webClient;
 
 	void start(@Observes StartupEvent startupEvent) {
 		logger.info("health check started");
-		webClient = proxyConfigurator.getWebClient();
 	}
 
 	@Scheduled(cron = "{proxy.healthcheck.heartbeat}")
@@ -44,18 +42,18 @@ public class HealthCheckService {
 
 		if (shouldDoHealthCheck)
 			helper.getRecords().subscribe().with(
-					records -> records.stream().filter(record -> record.getLocation() != null).forEach(this::pingRecord));
+					records -> records.stream().filter(record -> record.getLocation() != null && record.getStatus()==Status.UP).forEach(this::pingRecord));
 	}
 
 	private void pingRecord(Record record) {
-		String host = record.getLocation().getString("host");
-		Integer port = record.getLocation().getInteger("port");
+		String host = record.getLocation().getHost();
+		Integer port = record.getLocation().getPort();
 		webClient.get(port, host, "/ping").expect(ResponsePredicate.SC_OK).timeout(timeout * 1000L).send().subscribe().with(
 				bufferHttpResponse -> {
 					logger.trace("Received response: {}", bufferHttpResponse.bodyAsBuffer().toString());
 				}, throwable -> {
 					logger.debug("Removing record {} after fail ping", record.toJson().encode());
-					helper.removeRecord(record.getRegistration()).subscribe().with(unused -> logger.trace("Completed removal"));
+					helper.updateRecord(record.setStatus(Status.DOWN)).subscribe().with(unused -> logger.trace("Completed removal"));
 				});
 	}
 

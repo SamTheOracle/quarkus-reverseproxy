@@ -1,0 +1,10 @@
+{
+  "location": {
+    "port": 8080,
+    "root": "/users",
+    "host": "users",
+    "ssl": false,
+    "endpoint": "http://users:8080/users"
+  },
+  "name": "users_microservice"
+}

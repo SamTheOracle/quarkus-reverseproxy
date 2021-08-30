@@ -1,9 +1,13 @@
 package com.samtheoracle.dto;
 
+import com.samtheoracle.discovery.Status;
+
 public class RecordDto {
 
 	public LocationDto location;
 	public String name;
+	public String status;
+	public String registration;
 
 	public static class LocationDto{
 		public Integer port;
@@ -21,6 +25,11 @@ public class RecordDto {
 
 	@Override
 	public String toString() {
-		return "RecordDto{" + "location=" + location + ", name='" + name + '\'' + '}';
+		return "RecordDto{" +
+				"location=" + location +
+				", name='" + name + '\'' +
+				", status='" + status + '\'' +
+				", registration='" + registration + '\'' +
+				'}';
 	}
 }

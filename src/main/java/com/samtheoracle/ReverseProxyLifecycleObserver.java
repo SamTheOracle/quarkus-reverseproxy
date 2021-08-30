@@ -1,44 +1,46 @@
 package com.samtheoracle;
 
-import java.util.Optional;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
+import com.samtheoracle.discovery.Record;
+import com.samtheoracle.discovery.ServiceDiscovery;
+import io.vertx.mutiny.ext.web.client.WebClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.samtheoracle.config.ProxyConfigurator;
 
 import io.quarkus.runtime.Quarkus;
 import io.quarkus.runtime.StartupEvent;
-import io.vertx.mutiny.servicediscovery.ServiceDiscovery;
-import io.vertx.servicediscovery.Record;
 
 @ApplicationScoped
 public class ReverseProxyLifecycleObserver {
 
-	private final Logger logger = LoggerFactory.getLogger(this.getClass().getSimpleName());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass().getSimpleName());
+
+    @Inject
+    ServiceDiscovery discovery;
+
+    @Inject
+    WebClient webClient;
 
 
-	@Inject
-	ProxyConfigurator proxyConfigurator;
+    void onStart(@Observes StartupEvent event) {
 
-
-	void onStart(@Observes StartupEvent event){
-		ServiceDiscovery discovery = proxyConfigurator.getServiceDiscovery();
-		try {
-			Record record = discovery.publishAndAwait(new Record());
-			logger.debug("Test record: {}",record.toJson().encodePrettily());
-			discovery.unpublishAndAwait(record.getRegistration());
-			Optional<Record> optionalRecord = Optional.ofNullable(discovery.getRecordAndAwait(r->r.getRegistration().equals(record.getRegistration())));
-			if(optionalRecord.isPresent()){
-				throw new Exception("Error in configuration of discovery");
-			}
-		}catch(Exception e){
-			e.printStackTrace();
-			Quarkus.asyncExit(500);
-		}
-	}
+            discovery.createRecord(new Record()).onFailure()
+                    .invoke(throwable -> {
+                    }).onItemOrFailure().transformToUni((record, throwable) -> {
+                        if(throwable!=null){
+                            logger.error("Error in configuration of redis back-end. Could not register temp dummy record.", throwable);
+                            Quarkus.asyncExit(500);
+                        }
+                        logger.info("Published dummy record {}. Trying to remove it.", record);
+                        return discovery.removeRecord(record.getRegistration());
+                    }).onFailure().invoke(throwable -> {
+                        logger.error("could not delete dummy record.",throwable);
+                        Quarkus.asyncExit(500);
+                    }).subscribe()
+                    .with(record->logger.info("Redis backend successfully setup"));
+    }
 }
