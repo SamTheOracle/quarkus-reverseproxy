@@ -71,7 +71,14 @@ public class Record {
         return JsonObject.mapFrom(this);
     }
 
-
-
-
+    @Override
+    public String toString() {
+        return "Record{" +
+                "location=" + location +
+                ", name='" + name + '\'' +
+                ", status=" + status +
+                ", registration='" + registration + '\'' +
+                ", type='" + type + '\'' +
+                '}';
+    }
 }

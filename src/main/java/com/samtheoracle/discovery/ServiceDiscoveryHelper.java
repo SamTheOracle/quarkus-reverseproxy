@@ -2,14 +2,12 @@ package com.samtheoracle.discovery;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
 
-import com.samtheoracle.discovery.Record;
-import com.samtheoracle.discovery.ServiceDiscovery;
-import com.samtheoracle.discovery.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,15 +23,18 @@ public class ServiceDiscoveryHelper {
 	ServiceDiscovery discovery;
 
 
-	public Uni<Record> createNewRecord(Record record){
-		return discovery.getRecord(r-> Optional.ofNullable(r.getName()).orElse("").equals(record.getName())).onItem()
+	public Uni<Record> createNewRecord(Record newRecord){
+		Predicate<Record> namePredicate = record -> Optional.ofNullable(record.getName()).orElse("").equals(newRecord.getName());
+		return discovery.getRecord(namePredicate).onItem()
 				.ifNull()
-				.continueWith(record)
+				.continueWith(newRecord)
 				.onItem()
-				.transformToUni(r->discovery.createRecord(r));
+				.transformToUni(r->discovery.createRecord(r.setStatus(Status.UP)));
 	}
 	public Uni<Record> getRecord(String root){
-		return  discovery.getRecord(record -> record.getLocation()!=null && record.getLocation().getRoot().equals(root))
+		Predicate<Record> rootPredicate = record -> record.getLocation()!=null && record.getLocation().getRoot().equals(root);
+		Predicate<Record> statusPredicate = record -> record.getStatus()==Status.UP;
+		return  discovery.getRecord(rootPredicate.and(statusPredicate))
 				.onFailure()
 				.recoverWithNull()
 				.onItem()

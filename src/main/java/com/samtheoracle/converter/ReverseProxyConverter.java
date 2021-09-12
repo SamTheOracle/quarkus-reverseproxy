@@ -21,6 +21,7 @@ public class ReverseProxyConverter {
 		Buffer data = proxyResponse.getData();
 		proxyResponseDto.data = convertData(data);
 		proxyResponseDto.status = proxyResponse.getStatus();
+		proxyResponseDto.cacheId=proxyResponse.getCacheId();
 		return proxyResponseDto;
 	}
 
