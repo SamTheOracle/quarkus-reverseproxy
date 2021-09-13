@@ -36,7 +36,7 @@ public class ServiceDiscovery {
         record.setRegistration(uuid);
         record.setStatus(Status.UP);
         logger.debug("creating new record {}", record);
-        return redisClient.hset(Arrays.asList(key, uuid, record.toJson().encode()))
+        return redisClient.hset(Arrays.asList(this.key, uuid, record.toJson().encode()))
                 .onItem().transform(response -> record);
     }
 
